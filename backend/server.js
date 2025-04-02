@@ -14,8 +14,7 @@ const port = process.env.PORT || 4000;
 connectDB();
 connectCloudinary();
 
-// Middleware
-app.use(cors());
+// Middleware for CORS
 const allowedOrigins = ["https://forever-steel.vercel.app", "https://forever-admin-kohl.vercel.app"];
 
 app.use(
@@ -27,10 +26,13 @@ app.use(
         callback(new Error("CORS policy violation"));
       }
     },
-    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true, // Allow cookies and other credentials
   })
 );
 
+// Middleware to parse JSON request bodies
 app.use(express.json());
 
 // API endpoints
