@@ -16,6 +16,20 @@ connectCloudinary();
 
 // Middleware
 app.use(cors());
+const allowedOrigins = ["https://forever-steel.vercel.app", "https://forever-admin-kohl.vercel.app"];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS policy violation"));
+      }
+    },
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 // API endpoints
