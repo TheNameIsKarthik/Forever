@@ -15,8 +15,7 @@ connectDB();
 connectCloudinary();
 
 // Middleware
-const cors = require("cors");
-
+app.use(cors());
 const allowedOrigins = ["https://forever-steel.vercel.app", "https://forever-admin-kohl.vercel.app"];
 
 app.use(
@@ -25,17 +24,12 @@ app.use(
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        console.log("CORS blocked for:", origin); // Debugging line
         callback(new Error("CORS policy violation"));
       }
     },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
-
-app.options("*", cors());
 
 app.use(express.json());
 
