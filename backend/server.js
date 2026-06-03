@@ -19,11 +19,11 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
+  origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("CORS policy violation"));
+      callback(new Error("CORS error"));
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -33,23 +33,21 @@ app.use(cors({
 
 app.use(express.json());
 
-// ---------------- INIT DB ON FIRST REQUEST ----------------
-let isConnected = false;
+// ---------------- INIT ON START (SAFE CACHE) ----------------
+let initialized = false;
 
-const initDB = async () => {
-  if (!isConnected) {
+const init = async () => {
+  if (!initialized) {
     await connectDB();
     await connectCloudinary();
-    isConnected = true;
+    initialized = true;
   }
 };
 
-// ---------------- ROUTES ----------------
-app.use(async (req, res, next) => {
-  await initDB();
-  next();
-});
+// Only init when server starts (NOT per request)
+init();
 
+// ---------------- ROUTES ----------------
 app.use("/api/user", userRouter);
 app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
