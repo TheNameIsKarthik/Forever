@@ -11,57 +11,52 @@ import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
 
 const app = express();
-const port = process.env.PORT || 4000;
 
-// -------------------- CORS --------------------
+// ---------------- CORS ----------------
 const allowedOrigins = [
   "https://forever-steel.vercel.app",
   "https://forever-admin-kohl.vercel.app",
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("CORS policy violation"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "token"],
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS policy violation"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "token"],
+  credentials: true,
+}));
 
-// -------------------- MIDDLEWARE --------------------
 app.use(express.json());
 
-// -------------------- ROUTES (REGISTERED AFTER INIT) --------------------
+// ---------------- INIT DB ON FIRST REQUEST ----------------
+let isConnected = false;
+
+const initDB = async () => {
+  if (!isConnected) {
+    await connectDB();
+    await connectCloudinary();
+    isConnected = true;
+  }
+};
+
+// ---------------- ROUTES ----------------
+app.use(async (req, res, next) => {
+  await initDB();
+  next();
+});
+
 app.use("/api/user", userRouter);
 app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 
-// -------------------- HEALTH CHECK --------------------
 app.get("/", (req, res) => {
   res.send("API is Working");
 });
 
-// -------------------- INIT (IMPORTANT FIX) --------------------
-const startServer = async () => {
-  try {
-    await connectDB();
-    await connectCloudinary();
-
-    console.log("DB & Cloudinary connected");
-
-    app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
-    });
-  } catch (error) {
-    console.error("Server failed to start:", error);
-  }
-};
-
-startServer();
+export default app;
